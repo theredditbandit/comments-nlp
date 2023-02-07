@@ -1,0 +1,10 @@
+# requirements for fetching the comments 
+google-api-python-client
+tqdm
+# requirements for data cleaning 
+pandas
+numpy
+clean-text
+textblob
+string
+csv
