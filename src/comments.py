@@ -1,10 +1,10 @@
 import re
+import csv
 from os import path
+from sys import exit
+from tqdm import tqdm
 from colorama import Fore as c
 from googleapiclient.discovery import build
-from tqdm import tqdm
-import csv
-from sys import exit
 
 
 def validateApi(key: str) -> None:
@@ -98,20 +98,23 @@ def exitProg(reason="", code=0):
     exit(code)
 
 
-def getComments(API_KEY, vidId, results=20, allComments=False):
+def getComments(API_KEY, vidId, numberOfComments, results=20, allComments=False):
     youtube = build("youtube", "v3", developerKey=API_KEY)
 
+    if allComments:
+        filename = f"{vidId}_{numberOfComments}_comments.csv"
+    else:
+        filename = f"{vidId}_{results}_comments.csv"
     part = "id,snippet"
 
     def getComments():
         request = youtube.commentThreads().list(
             part=part, maxResults=results, order="time", videoId=vidId
         )
-        for _ in tqdm(range(10), desc=c.GREEN + "Fetching  Comments . . ."):
-            response = request.execute()
-        #  format the response dict to return a list of comments
+        print(c.GREEN + "Fetching  Comments . . .")
+        response = request.execute()
 
-        with open(f"{vidId}_comments.csv", "w", encoding="utf-8") as csvfile:
+        with open(f"{filename}", "w", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Author", "Likes", "Comment"])
 
@@ -129,49 +132,57 @@ def getComments(API_KEY, vidId, results=20, allComments=False):
                 )
         print(
             c.GREEN + "Comments saved to file " +
-            c.WHITE + f"{vidId}_comments.csv ✔️"
+            c.WHITE + f"{filename} ✔️"
         )
+        return f"{filename}"
 
     def getAllComments():
         next_page_token = ""
-        with open(f"{vidId}_comments.csv", "w", encoding="utf-8") as csvfile:
+        with open(f"{filename}", "w", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["Author", "Likes", "Comment"])
-            for _ in tqdm(range(100), desc=c.GREEN + "Fetching  All Comments . . ."):
-                while True:
-                    request = youtube.commentThreads().list(
-                        part=part,
-                        maxResults=results,
-                        order="time",
-                        videoId=vidId,
-                        pageToken=next_page_token,
+            pbar = tqdm(total=numberOfComments, desc=c.GREEN +
+                        "Fetching  All Comments . . .")
+            while True:
+                request = youtube.commentThreads().list(
+                    part=part,
+                    maxResults=results,
+                    order="time",
+                    videoId=vidId,
+                    pageToken=next_page_token,
+                )
+                response = request.execute()
+                for comment in response["items"]:
+                    writer.writerow(
+                        [
+                            comment["snippet"]["topLevelComment"]["snippet"][
+                                "authorDisplayName"
+                            ],
+                            comment["snippet"]["topLevelComment"]["snippet"][
+                                "likeCount"
+                            ],
+                            comment["snippet"]["topLevelComment"]["snippet"][
+                                "textOriginal"
+                            ],
+                        ]
                     )
-                    response = request.execute()
-                    for comment in response["items"]:
-                        writer.writerow(
-                            [
-                                comment["snippet"]["topLevelComment"]["snippet"][
-                                    "authorDisplayName"
-                                ],
-                                comment["snippet"]["topLevelComment"]["snippet"][
-                                    "likeCount"
-                                ],
-                                comment["snippet"]["topLevelComment"]["snippet"][
-                                    "textOriginal"
-                                ],
-                            ]
-                        )
-                    next_page_token = response.get("nextPageToken", None)
-                    if not next_page_token:
-                        break
+                    # comments += 1
+                    pbar.update(2)
+                next_page_token = response.get("nextPageToken", None)
+                # pbar.update(1)
+                if not next_page_token:
+                    pbar.close()
+                    print(c.GREEN + "Comments saved to file " +
+                          c.WHITE + f"{filename} ✔️")
+                    return f"{filename}"
 
     if allComments or results > 100:
-        getAllComments()
+        return getAllComments()  # returns filename
     else:
-        getComments()
+        return getComments()  # returns filename
 
 
-def getNumberOfComments():
+def getInput():
     try:
         results = int(
             input(
@@ -189,6 +200,13 @@ def getNumberOfComments():
     return results
 
 
+def getNumberOfComments(API_KEY, vidId):
+    yt = build("youtube", "v3", developerKey=API_KEY)
+    request = yt.videos().list(part="statistics", id=vidId)
+    response = request.execute()
+    return response["items"][0]["statistics"]["commentCount"]
+
+
 def downloadComments():
     API_KEY = getKey()
     while True:
@@ -199,20 +217,25 @@ def downloadComments():
             continue
 
     id = getId(URL)
+
+    totalComments = getNumberOfComments(API_KEY, id)
+    print(c.LIGHTGREEN_EX + "Total Number of Comments : " + c.WHITE + totalComments)
+
     allComments = input(
         c.YELLOW +
         "Do you want to get all the comments ?[Y/N] " + c.WHITE + ": "
     )
     if allComments.upper() == "N":
         allComments = False
-        results = getNumberOfComments()
+        results = getInput()  # gets the number of results to request
     elif allComments.upper() == "Y":
         allComments = True
         results = 100
     else:
         exitProg("Invalid Choice!")
 
-    getComments(API_KEY, id, results, allComments)
+    # returns filename
+    return getComments(API_KEY, id, int(totalComments), results, allComments)
 
 
 if __name__ == "__main__":
