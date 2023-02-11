@@ -1,6 +1,7 @@
 import pandas as pd
 import string
 from cleantext import clean
+from tqdm import tqdm
 from textblob import TextBlob, Word     # correct the words in the sentences 
 
 # stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 'yourself', 'yourselves', 
@@ -13,10 +14,10 @@ from textblob import TextBlob, Word     # correct the words in the sentences
 # 'didn', "didn't", 'doesn', "doesn't", 'hadn', "hadn't", 'hasn', "hasn't", 'haven', "haven't", 'isn', "isn't", 'ma', 'mightn', "mightn't", 'mustn', "mustn't", 'needn', 
 # "needn't", 'shan', "shan't", 'shouldn', "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't"]
 
-# def stopwords_removal(sentence):
-#     word_tokens = sentence.split()
-#     filtered_sentence = [w for w in word_tokens if not w in stopwords]
-#     return " ".join(filtered_sentence)
+def stopwords_removal(sentence):
+    word_tokens = sentence.split()
+    filtered_sentence = [w for w in word_tokens if not w in stopwords]
+    return " ".join(filtered_sentence)
 
 
 def correct_sentence_spelling(sentence):
@@ -34,33 +35,68 @@ def remove_specialchar(sentence):
 
     return(new_string)
 
-data = pd.read_csv(r"A6zQV9e2S1M_comments.csv")    # keep it dynamic 
+data1 = pd.read_csv(r"4O0_-1NaWnY_5348_comments.csv") 
+#data2 = pd.read_csv(r"WHoWGNQRXb0_1187_comments.csv")                             
+
+
+total_operations = 4  # number of operations performed
+with tqdm(total=total_operations, desc='Training Data cleaning', unit='op') as pbar:
+
+    data1['Comment'] = data1['Comment'].str.lower()
+    pbar.update(1)
+
+    data1['Comment'] = data1['Comment'].apply(lambda x: correct_sentence_spelling(x))
+    pbar.update(1)
+
+    data1['Comment'] = data1['Comment'].apply(lambda x: remove_emoji(x))
+    pbar.update(1)
+
+    data1['Comment'] = data1['Comment'].apply(lambda x: remove_specialchar(x))
+    pbar.update(1)
+
+    # data1['Comment'] = data1['Comment'].apply(lambda x : stopwords_removal(x))
+    # pbar.update(1)
+
+    data1['polarity'] = data1['Comment'].apply(lambda x: TextBlob(x).sentiment.polarity)
+    data1['pol_cat']  = 0
+
+
+data1['pol_cat'][data1.polarity > 0] = 1
+#data['pol_cat'][data.polarity == 0] = 0
+data1['pol_cat'][data1.polarity <= 0] = -1
+
+
+# with tqdm(total=total_operations, desc='Test Data cleaning', unit='op') as pbar:
+#     data2['Comment'] = data2['Comment'].str.lower()
+#     pbar.update(1)
+
+#     data2['Comment'] = data2['Comment'].apply(lambda x: correct_sentence_spelling(x))
+#     pbar.update(1)
+
+#     data2['Comment'] = data2['Comment'].apply(lambda x: remove_emoji(x))
+#     pbar.update(1)
+
+#     data2['Comment'] = data2['Comment'].apply(lambda x: remove_specialchar(x))
+#     pbar.update(1)
+
+#     data2['Comment'] = data2['Comment'].apply(lambda x : stopwords_removal(x))
+#     pbar.update(1)
+    
+#     data2['polarity'] = data2['Comment'].apply(lambda x: TextBlob(x).sentiment.polarity)
+#     data2['pol_cat']  = 0
+
+
+
+
+#data2['pol_cat'][data2.polarity > 0] = 1
+#data['pol_cat'][data.polarity == 0] = 0
+#data2['pol_cat'][data2.polarity <= 0] = -1
+
+
+data1.to_csv('Clean1_comments.csv')
+#data2.to_csv('Clean2_comments.csv')
+
+
 #print(data.head())
-#print(data.shape)
-data['Comment'] = data['Comment'].str.lower()
-data['Comment'] = data['Comment'].apply(lambda x: correct_sentence_spelling(x))
-data['Comment'] = data['Comment'].apply(lambda x: remove_emoji(x))
-data['Comment'] = data['Comment'].apply(lambda x: remove_specialchar(x))
-#data['Comment'] = data['Comment'].apply(lambda x : stopwords_removal(x))
-data['polarity'] = data['Comment'].apply(lambda x: TextBlob(x).sentiment.polarity)
-data['pol_cat']  = 0
-
-data['pol_cat'][data.polarity > 0] = 1
-data['pol_cat'][data.polarity == 0] = 0
-data['pol_cat'][data.polarity < 0] = -1
-
-# data_pos = data[data['pol_cat'] == 1]
-# data_pos = data_pos.reset_index(drop = True)
-
-# data_neg = data[data['pol_cat'] == -1]
-# data_neg = data_neg.reset_index(drop = True)
-
-# print(data_pos.head())
-# print(data_neg.head())
-
-# data_pos.to_csv('positive_comments.csv')  # change the naming convention 
-# data_neg.to_csv('negative_comments.csv')  # change the naming convention 
-data.to_csv('Clean_comments.csv')
-print(data.head())
 #data.pol_cat.value_counts().plt.bar()
-print(data.pol_cat.value_counts())
+#print(data.pol_cat.value_counts())
