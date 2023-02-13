@@ -26,15 +26,11 @@ def stopwords_removal(sentence):
 
 
 def correct_sentence_spelling(sentence):
-    # sentence = TextBlob(sentence)
-    # result = sentence.correct()
-    # return(result)
     if isinstance(sentence, str):
         sentence = TextBlob(sentence)
         sentence = sentence.correct()
         return str(sentence)
     else:
-        # Handle non-string values here, for example:
         return str(sentence)
 
 
@@ -48,11 +44,7 @@ def remove_specialchar(sentence):
     return(new_string)
 
 
-
-
 data = pd.read_csv(filename) 
-                            
-
 
 total_operations = 4  # number of operations performed
 with tqdm(total=total_operations, desc='Training Data cleaning', unit='op') as pbar:
@@ -77,7 +69,6 @@ with tqdm(total=total_operations, desc='Training Data cleaning', unit='op') as p
 
 
 data['pol_cat'][data.polarity > 0] = 1
-# data['pol_cat'][data.polarity == 0] = 0
 data['pol_cat'][data.polarity <= 0] = -1
 
 
