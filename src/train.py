@@ -9,7 +9,8 @@ from sklearn.model_selection import cross_val_score
 data = pd.read_csv(cleaned_data)
 
 # Split the data into 80% training data and 20% testing data
-train_data, test_data, train_labels, test_labels = train_test_split(data.drop("Likes", axis=1), data["pol_cat"], test_size=0.1)
+train_data, test_data, train_labels, test_labels = train_test_split(
+    data.drop("Likes", axis=1), data["pol_cat"], test_size=0.1)
 
 # Convert the comments to numerical feature vectors using the CountVectorizer
 vectorizer = CountVectorizer()
@@ -24,8 +25,8 @@ model.fit(train_features, train_data["pol_cat"])
 
 
 for i in range(0, 100):
-    scores = cross_val_score(model, train_features, train_data["pol_cat"], cv=5)
+    scores = cross_val_score(model, train_features,
+                             train_data["pol_cat"], cv=5)
 
 
 print(f"Accuracy of {model.__class__.__name__}: {scores.mean()}")
-
