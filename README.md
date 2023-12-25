@@ -16,3 +16,15 @@ Sentiment analysis, also known as opinion mining, is a process of determining th
 ## Conclusion
 Sentiment analysis is a powerful tool for understanding and analyzing the sentiments expressed in text data. It has various applications in fields such as customer feedback analysis, social media analysis, and political analysis. The choice of method depends on the requirement and the size of the dataset, but both rule-based and machine learning-based methods have their own advantages and limitations.
 
+## Star History
+
+## Star History
+
+<a href="https://star-history.com/#theredditbandit/comments-nlp&Timeline">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=theredditbandit/comments-nlp&type=Timeline&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=theredditbandit/comments-nlp&type=Timeline" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=theredditbandit/comments-nlp&type=Timeline" />
+  </picture>
+</a>
+
