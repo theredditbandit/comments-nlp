@@ -18,8 +18,6 @@ Sentiment analysis is a powerful tool for understanding and analyzing the sentim
 
 ## Star History
 
-## Star History
-
 <a href="https://star-history.com/#theredditbandit/comments-nlp&Timeline">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=theredditbandit/comments-nlp&type=Timeline&theme=dark" />
